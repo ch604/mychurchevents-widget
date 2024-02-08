@@ -3,6 +3,8 @@
 Plugin Name: MyChurchEvents Widget
 Description: Collects weekly calendar data from mychurchevents.com
 Author: Andrej Walilko
+Plugin URI: https://github.com/ch604/mychurchevents-widget
+Version: 1.1
 */
 
 class ChurchCalWidget extends WP_Widget
@@ -48,4 +50,11 @@ class ChurchCalWidget extends WP_Widget
                 echo $after_widget;
         }
 }
-add_action( 'widgets_init', create_function('', 'return register_widget("ChurchCalWidget");') );?>
+
+add_action(
+	'widgets_init',
+	function() {
+		register_widget("ChurchCalWidget");
+	}
+);
+?>
