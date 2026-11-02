@@ -4,50 +4,51 @@ Plugin Name: MyChurchEvents Widget
 Description: Collects weekly calendar data from mychurchevents.com
 Author: Andrej Walilko
 Plugin URI: https://github.com/ch604/mychurchevents-widget
-Version: 1.1
+Version: 1.2
+Requires PHP: 8.1
 */
 
 class ChurchCalWidget extends WP_Widget
 {
-        function ChurchCalWidget()
+        public function __construct()
         {
                 $widget_ops = array('classname' => 'ChurchCalWidget', 'description' => 'Displays weekly calendar data from mychurchevents.com' );
-                $this->WP_Widget('ChurchCalWidget', 'MyChurchEvents.com Calendar Widget', $widget_ops);
+                parent::__construct('ChurchCalWidget', 'MyChurchEvents.com Calendar Widget', $widget_ops);
         }
 
-        function form($instance)
+        public function form($instance)
         {
                 $instance = wp_parse_args( (array) $instance, array( 'title' => 'Upcoming Events', 'cid' => '') );
-                $title = $instance['title'];
-                $cid = $instance['cid'];
+                $title = (string) $instance['title'];
+                $cid = (string) $instance['cid'];
 ?>
-  <p><label for="<?php echo $this->get_field_id('title'); ?>">Title: <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo attribute_escape($title); ?>" /></label></p>
-  <p><label for="<?php echo $this->get_field_id('cid'); ?>">Church ID (ci): <input class="widefat" id="<?php echo $this->get_field_id('cid');?>" name="<?php echo $this->get_field_name('cid'); ?>" type="text" value="<?php echo attribute_escape($cid); ?>" /></label></p>
+  <p><label for="<?php echo $this->get_field_id('title'); ?>">Title: <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo esc_attr($title); ?>" /></label></p>
+  <p><label for="<?php echo $this->get_field_id('cid'); ?>">Church ID (ci): <input class="widefat" id="<?php echo $this->get_field_id('cid');?>" name="<?php echo $this->get_field_name('cid'); ?>" type="text" value="<?php echo esc_attr($cid); ?>" /></label></p>
 <?php
         }
 
-        function update($new_instance, $old_instance)
+        public function update($new_instance, $old_instance)
         {
                 $instance = $old_instance;
-                $instance['title'] = $new_instance['title'];
-                $instance['cid'] = $new_instance['cid'];
+                $instance['title'] = sanitize_text_field($new_instance['title']);
+                $instance['cid'] = sanitize_text_field($new_instance['cid']);
                 return $instance;
         }
 
-        function widget($args, $instance)
+        public function widget($args, $instance)
         {
-                extract($args, EXTR_SKIP);
+                $cid = rawurlencode((string) ($instance['cid'] ?? ''));
 
-                echo $before_widget;
+                echo $args['before_widget'];
                 $title = empty($instance['title']) ? ' ' : apply_filters('widget_title', $instance['title']);
 
                 if (!empty($title))
-                        echo $before_title . $title . $after_title;;
+                        echo $args['before_title'] . $title . $args['after_title'];
 
-                echo '<iframe width="250" height="550" frameborder="0" src="http://www.mychurchevents.com/calendar/views/listview.aspx?ci=' . $instance['cid'] . '&list_by=dayspan&DayCount=7&select_by=all_interest_groups&igd="></iframe><br><br>';
-                echo '<a href="http://www.mychurchevents.com/calendar/calendar.aspx?ci=' . $instance['cid'] . '" target="_blank">Monthly Calendar Link</a>';
+                echo '<iframe width="250" height="550" frameborder="0" src="https://www.mychurchevents.com/calendar/views/listview.aspx?ci=' . esc_attr($cid) . '&list_by=dayspan&DayCount=7&select_by=all_interest_groups&igd="></iframe><br><br>';
+                echo '<a href="http://www.mychurchevents.com/calendar/calendar.aspx?ci=' . esc_attr($cid) . '" target="_blank">Monthly Calendar Link</a>';
 
-                echo $after_widget;
+                echo $args['after_widget'];
         }
 }
 
@@ -57,4 +58,3 @@ add_action(
 		register_widget("ChurchCalWidget");
 	}
 );
-?>
